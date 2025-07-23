@@ -691,9 +691,6 @@
                 <i class="fas fa-moon"></i> Dark Mode
             </button>
             <div class="btn-group" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn btn-primary" onclick="saveWarehouseState()">
-                    <i class="fas fa-save"></i> Salva
-                </button>
                 <button class="btn btn-success" onclick="addWarehouse()">
                     <i class="fas fa-plus"></i> Nuovo Magazzino
                 </button>
@@ -899,13 +896,6 @@
         
         // ========== FUNZIONI PRINCIPALI ========== //
         
-        function saveWarehouseState() {
-            localStorage.setItem('warehouseData', JSON.stringify(warehouses));
-            localStorage.setItem('warehouseHistory', JSON.stringify(history));
-            localStorage.setItem('sortState', JSON.stringify(sortState));
-            showNotification('Dati salvati con successo!');
-        }
-        
         function loadWarehouseState() {
             const savedData = localStorage.getItem('warehouseData');
             if (savedData) {
@@ -1094,12 +1084,6 @@
                             </div>
                         </div>
                         <div class="actions">
-                            <button class="btn btn-sm" onclick="generateLabel('${category}', ${index})">
-                                <i class="fas fa-tag"></i> Etichetta
-                            </button>
-                            <button class="btn btn-sm" onclick="generateQR('${category}', ${index})">
-                                <i class="fas fa-qrcode"></i> QR
-                            </button>
                             <button class="btn btn-danger" onclick="removeItem('${category}', ${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -1154,78 +1138,6 @@
                 saveWarehouseState();
                 renderCategories();
             }
-        }
-        
-        // ========== ETICHETTE E QR CODE ========== //
-        
-        function generateLabel(category, index) {
-            const item = warehouses[currentWarehouse][category][index];
-            
-            // Genera prima il QR code
-            QRCode.toDataURL(item.nome, { width: 150 }, (err, qrUrl) => {
-                if (err) {
-                    console.error(err);
-                    showNotification('Errore nella generazione del QR code', true);
-                    return;
-                }
-                
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Etichetta ${item.nome}</title>
-                        <style>
-                            body { font-family: Arial; padding: 1cm; text-align: center; }
-                            .label { 
-                                border: 1px solid #000; 
-                                padding: 10px; 
-                                display: inline-block;
-                                margin: 10px;
-                                text-align: center;
-                                width: 5cm;
-                            }
-                            h2 { margin: 0 0 10px 0; font-size: 18px; }
-                            .qr-code { margin: 10px 0; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="label">
-                            <h2>${item.nome}</h2>
-                            <div>Quantità: ${item.quantita}</div>
-                            <div class="qr-code">
-                                <img src="${qrUrl}" alt="QR Code">
-                            </div>
-                        </div>
-                        <script>
-                            window.onload = function() {
-                                setTimeout(function() {
-                                    window.print();
-                                }, 200);
-                            };
-                        <\/script>
-                    </body>
-                    </html>
-                `);
-            });
-        }
-        
-        function generateQR(category, index) {
-            const item = warehouses[currentWarehouse][category][index];
-            const text = `Magazzino: ${currentWarehouse}\nCategoria: ${category}\nArticolo: ${item.nome}\nQuantità: ${item.quantita}\nSoglia allerta: ${item.alertThreshold || 5}`;
-            
-            QRCode.toDataURL(text, { width: 300 }, (err, url) => {
-                if (err) return console.error(err);
-                
-                const win = window.open();
-                win.document.write(`
-                    <div style="padding: 20px; text-align: center;">
-                        <h2>${item.nome}</h2>
-                        <img src="${url}" style="max-width: 100%; margin: 20px 0;">
-                        <p>${text.replace(/\n/g, '<br>')}</p>
-                    </div>
-                `);
-            });
         }
         
         // ========== RICERCA E FILTRI ========== //
@@ -1541,6 +1453,12 @@
                 switchWarehouse(newName);
             }
             toggleRename();
+        }
+
+        function saveWarehouseState() {
+            localStorage.setItem('warehouseData', JSON.stringify(warehouses));
+            localStorage.setItem('warehouseHistory', JSON.stringify(history));
+            localStorage.setItem('sortState', JSON.stringify(sortState));
         }
         
         // ========== INIZIALIZZAZIONE ========== //
